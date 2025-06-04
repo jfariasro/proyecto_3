@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Quizzes Disponibles</h1>
+    <div class="row">
+        {% for quiz in quizzes %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ quiz.titulo }}</h5>
+                    <p class="card-text">{{ quiz.descripcion|truncatewords:20 }}</p>
+                    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary">Ver Quiz</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No hay quizzes disponibles.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
