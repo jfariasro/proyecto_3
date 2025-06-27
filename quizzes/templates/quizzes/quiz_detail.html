@@ -7,38 +7,41 @@
     <!-- Quiz Header -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
-                    <div class="row align-items-center">
+            <div class="card quiz-detail-card border-0 shadow-lg">
+                <div class="quiz-detail-header text-white">
+                    <div class="row align-items-center" style="position: relative; z-index: 2; padding: 2rem;">
                         <div class="col">
-                            <h1 class="mb-0">
-                                <i class="bi bi-patch-question-fill"></i> {{ quiz.titulo }}
+                            <h1 class="mb-0" style="text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                                <i class="bi bi-patch-question-fill me-3"></i>{{ quiz.titulo }}
                             </h1>
                         </div>
                         <div class="col-auto">
-                            <span class="badge bg-light text-dark">
-                                <i class="bi bi-list-ol"></i> {{ preguntas|length }} pregunta{{ preguntas|length|pluralize }}
+                            <span class="badge bg-light text-dark px-3 py-2" style="font-size: 0.9rem;">
+                                <i class="bi bi-list-ol me-1"></i>{{ preguntas|length }} pregunta{{ preguntas|length|pluralize }}
                             </span>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <p class="lead">{{ quiz.descripcion }}</p>
+                <div class="card-body" style="padding: 2rem;">
+                    <p class="lead mb-4" style="color: #2c3e50; font-size: 1.2rem;">{{ quiz.descripcion }}</p>
                     <div class="row">
                         <div class="col-md-6">
-                            <small class="text-muted">
-                                <i class="bi bi-calendar3"></i> Creado: {{ quiz.fecha_creacion|date:"d/m/Y H:i" }}
-                            </small>
+                            <div class="d-flex align-items-center text-muted">
+                                <i class="bi bi-calendar3 me-2 text-info"></i>
+                                <span>Creado el {{ quiz.fecha_creacion|date:"d/m/Y H:i" }}</span>
+                            </div>
                         </div>
                         <div class="col-md-6 text-md-end">
-                            <small class="text-muted">
-                                <i class="bi bi-check-circle"></i> Estado: 
+                            <div class="d-flex align-items-center justify-content-md-end text-muted">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span>Estado: 
                                 {% if quiz.activo %}
-                                    <span class="text-success">Activo</span>
+                                    <span class="text-success fw-bold">Activo</span>
                                 {% else %}
-                                    <span class="text-danger">Inactivo</span>
+                                    <span class="text-danger fw-bold">Inactivo</span>
                                 {% endif %}
-                            </small>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -52,24 +55,29 @@
             <form id="quizForm" class="needs-validation" novalidate>
                 {% csrf_token %}
                 {% for pregunta in preguntas %}
-                <div class="card mb-4 border-0 shadow">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <i class="bi bi-question-circle"></i> 
+                <div class="question-card">
+                    <div class="question-header">
+                        <h5 class="question-text">
+                            <i class="bi bi-question-circle me-2"></i> 
                             Pregunta {{ forloop.counter }}: {{ pregunta.texto }}
                         </h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="padding: 2rem;">
                         <div class="row">
                             {% for opcion in pregunta.opciones.all %}
                             <div class="col-md-6 mb-3">
-                                <div class="form-check p-3 border rounded option-card" style="cursor: pointer;">
-                                    <input class="form-check-input" type="radio" 
-                                           name="pregunta_{{ pregunta.id }}" 
-                                           id="opcion_{{ opcion.id }}" 
-                                           value="{{ opcion.id }}" required>
-                                    <label class="form-check-label w-100" for="opcion_{{ opcion.id }}" style="cursor: pointer;">
-                                        <strong>{% if forloop.counter == 1 %}A{% elif forloop.counter == 2 %}B{% elif forloop.counter == 3 %}C{% else %}D{% endif %})</strong> {{ opcion.texto }}
+                                <div class="option-item" onclick="selectOption(this, '{{ opcion.id }}')">
+                                    <label class="option-label">
+                                        <input class="option-radio" type="radio" 
+                                               name="pregunta_{{ pregunta.id }}" 
+                                               id="opcion_{{ opcion.id }}" 
+                                               value="{{ opcion.id }}" required>
+                                        <span>
+                                            <strong class="me-2" style="color: #667eea;">
+                                                {% if forloop.counter == 1 %}A{% elif forloop.counter == 2 %}B{% elif forloop.counter == 3 %}C{% else %}D{% endif %})
+                                            </strong>
+                                            {{ opcion.texto }}
+                                        </span>
                                     </label>
                                 </div>
                             </div>
@@ -81,32 +89,48 @@
                     </div>
                 </div>
                 {% empty %}
-                <div class="alert alert-warning text-center">
+                <div class="empty-state">
                     <i class="bi bi-exclamation-triangle"></i>
-                    <h4>No hay preguntas en este quiz</h4>
-                    <p>Este quiz aún no tiene preguntas configuradas.</p>
+                    <h4 class="text-muted">No hay preguntas en este quiz</h4>
+                    <p class="text-muted mb-0">Este quiz aún no tiene preguntas configuradas.</p>
                 </div>
                 {% endfor %}
 
                 {% if preguntas %}
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-success btn-lg me-3">
-                        <i class="bi bi-check-circle"></i> Enviar Respuestas
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-submit-quiz me-3">
+                        <i class="bi bi-check-circle me-2"></i>Enviar Respuestas
                     </button>
                     <a href="/" class="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-arrow-left"></i> Volver a la lista
+                        <i class="bi bi-arrow-left me-2"></i>Volver a la lista
                     </a>
                 </div>
                 {% else %}
                 <div class="text-center">
-                    <a href="/" class="btn btn-primary btn-lg">
-                        <i class="bi bi-arrow-left"></i> Volver a la lista
+                    <a href="/" class="btn btn-quiz">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a la lista
                     </a>
                 </div>
                 {% endif %}
             </form>
         </div>
     </div>
+
+    <script>
+        function selectOption(element, optionId) {
+            // Remove selected class from all options in the same question
+            const questionCard = element.closest('.question-card');
+            const allOptions = questionCard.querySelectorAll('.option-item');
+            allOptions.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            
+            // Check the radio button
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+        }
+    </script>
 </div>
 
 <!-- Results Modal -->

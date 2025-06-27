@@ -49,34 +49,43 @@
         {% for quiz in quizzes %}
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="card quiz-card h-100">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-patch-question"></i> {{ quiz.titulo }}
+                <div class="quiz-card-header">
+                    <h5 class="quiz-card-title">
+                        <i class="bi bi-patch-question me-2"></i>{{ quiz.titulo }}
                     </h5>
                 </div>
-                <div class="card-body d-flex flex-column">
-                    <p class="card-text flex-grow-1">{{ quiz.descripcion }}</p>
-                    <div class="quiz-info mb-3">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar3"></i> Creado: {{ quiz.fecha_creacion|date:"d/m/Y" }}
-                        </small>
-                        <br>
-                        <small class="text-muted">
-                            <i class="bi bi-list-ol"></i> {{ quiz.preguntas.count }} pregunta{{ quiz.preguntas.count|pluralize }}
-                        </small>
+                <div class="card-body quiz-card-body d-flex flex-column">
+                    <p class="quiz-card-text flex-grow-1">{{ quiz.descripcion }}</p>
+                    
+                    <div class="quiz-info">
+                        <div class="quiz-info-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Creado el {{ quiz.fecha_creacion|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="quiz-info-item">
+                            <i class="bi bi-list-ol"></i>
+                            <span>{{ quiz.preguntas.count }} pregunta{{ quiz.preguntas.count|pluralize }}</span>
+                        </div>
+                        <div class="quiz-info-item">
+                            <i class="bi bi-clock"></i>
+                            <span>Duración estimada: {{ quiz.preguntas.count|add:quiz.preguntas.count }} min</span>
+                        </div>
                     </div>
-                    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-quiz">
-                        <i class="bi bi-play-circle"></i> Comenzar Quiz
-                    </a>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-quiz">
+                            <i class="bi bi-play-circle me-2"></i>Comenzar Quiz
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
-            <div class="alert alert-info text-center">
-                <i class="bi bi-info-circle"></i>
-                <h4>No hay quizzes disponibles</h4>
-                <p>¡Pronto tendremos nuevos quizzes para ti!</p>
+            <div class="empty-state">
+                <i class="bi bi-collection"></i>
+                <h4 class="text-muted">No hay quizzes disponibles</h4>
+                <p class="text-muted mb-0">¡Pronto tendremos nuevos quizzes para ti!</p>
             </div>
         </div>
         {% endfor %}

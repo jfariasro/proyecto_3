@@ -260,17 +260,19 @@ def admin_opcion_create(request, pregunta_id):
 @user_passes_test(is_staff_user)
 def admin_opcion_edit(request, opcion_id):
     opcion = get_object_or_404(Opcion, id=opcion_id)
+    pregunta = opcion.pregunta
     if request.method == 'POST':
         form = OpcionForm(request.POST, instance=opcion)
         if form.is_valid():
             form.save()
             messages.success(request, 'Opción actualizada exitosamente.')
-            return redirect('admin_pregunta_edit', pregunta_id=opcion.pregunta.id)
+            return redirect('admin_pregunta_edit', pregunta_id=pregunta.id)
     else:
         form = OpcionForm(instance=opcion)
     return render(request, 'quizzes/admin/opcion_form.html', {
         'form': form,
         'opcion': opcion,
+        'pregunta': pregunta,
         'title': f'Editar Opción'
     })
 
