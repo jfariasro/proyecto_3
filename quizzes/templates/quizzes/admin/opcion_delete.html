@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Eliminar Opción - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-trash text-danger"></i> Eliminar Opción</h2>
+                    <p class="text-muted">
+                        Quiz: <strong>{{ opcion.pregunta.quiz.titulo }}</strong><br>
+                        Pregunta: <strong>{{ opcion.pregunta.texto|truncatechars:50 }}</strong>
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_pregunta_edit' opcion.pregunta.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a la Pregunta
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmación de eliminación -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación de Opción
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer. Se eliminará permanentemente:
+                        <ul class="mt-2 mb-0">
+                            <li>Esta opción de respuesta</li>
+                            <li>Todas las respuestas de usuarios que seleccionaron esta opción</li>
+                        </ul>
+                    </div>
+
+                    <!-- Información de la opción -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                <i class="bi bi-list-ul"></i> Opción a Eliminar
+                            </h6>
+                            
+                            <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                                {% if opcion.es_correcta %}
+                                    <i class="bi bi-check-circle-fill text-success me-3" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <span class="badge bg-success mb-1">RESPUESTA CORRECTA</span>
+                                        <h5 class="mb-0">{{ opcion.texto }}</h5>
+                                    </div>
+                                {% else %}
+                                    <i class="bi bi-circle text-muted me-3" style="font-size: 1.5rem;"></i>
+                                    <div>
+                                        <span class="badge bg-secondary mb-1">Respuesta Incorrecta</span>
+                                        <h5 class="mb-0">{{ opcion.texto }}</h5>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Pregunta:</strong> {{ opcion.pregunta.texto|truncatechars:40 }}</li>
+                                        <li><strong>Quiz:</strong> {{ opcion.pregunta.quiz.titulo }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Tipo pregunta:</strong> {{ opcion.pregunta.get_tipo_display }}</li>
+                                        <li><strong>Es correcta:</strong> 
+                                            {% if opcion.es_correcta %}
+                                                <span class="text-success">Sí</span>
+                                            {% else %}
+                                                <span class="text-muted">No</span>
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advertencias específicas -->
+                    {% if opcion.es_correcta %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>¡Advertencia Crítica!</strong> Esta es una respuesta <strong>correcta</strong>. 
+                            Si la eliminas:
+                            <ul class="mt-2 mb-0">
+                                <li>La pregunta puede quedar sin respuestas correctas</li>
+                                <li>Los usuarios que la seleccionaron perderán sus puntos</li>
+                                <li>El quiz puede volverse inválido</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Estado después de la eliminación -->
+                    <div class="card mt-3 border-info">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-info-circle text-info"></i> Estado después de eliminar</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Estado actual:</h6>
+                                    <ul class="small">
+                                        <li>Opciones totales: <strong>{{ opcion.pregunta.opciones.count }}</strong></li>
+                                        <li>Opciones correctas: <strong>{{ opcion.pregunta.opciones.all|opciones_correctas }}</strong></li>
+                                        <li>Opciones incorrectas: <strong>{{ opcion.pregunta.opciones.all|opciones_incorrectas }}</strong></li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Después de eliminar:</h6>
+                                    <ul class="small">
+                                        <li>Opciones restantes: <strong>{{ opcion.pregunta.opciones.count|add:"-1" }}</strong></li>
+                                        <li>Opciones correctas: <strong>
+                                            {% if opcion.es_correcta %}
+                                                {{ opcion.pregunta.opciones.all|opciones_correctas|add:"-1" }}
+                                            {% else %}
+                                                {{ opcion.pregunta.opciones.all|opciones_correctas }}
+                                            {% endif %}
+                                        </strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            {% if opcion.pregunta.opciones.count == 1 %}
+                                <div class="alert alert-danger mt-2 mb-0" role="alert">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>¡Última opción!</strong> Esta es la única opción de la pregunta. 
+                                    Si la eliminas, la pregunta quedará sin opciones de respuesta.
+                                </div>
+                            {% elif opcion.es_correcta and opcion.pregunta.opciones.all|opciones_correctas == 1 %}
+                                <div class="alert alert-warning mt-2 mb-0" role="alert">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>¡Última respuesta correcta!</strong> Esta es la única respuesta correcta. 
+                                    Si la eliminas, la pregunta quedará sin respuestas correctas.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                <label class="form-check-label fw-bold text-danger" for="confirmDelete">
+                                    Confirmo que quiero eliminar permanentemente esta opción
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'admin_pregunta_edit' opcion.pregunta.id %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <a href="{% url 'admin_opcion_edit' opcion.id %}" class="btn btn-outline-primary me-md-2">
+                                <i class="bi bi-pencil"></i> Editar en su lugar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="bi bi-trash"></i> Eliminar Opción
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternativas -->
+            <div class="card mt-4 border-success">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb text-success"></i> Alternativas</h6>
+                </div>
+                <div class="card-body">
+                    <p>En lugar de eliminar esta opción, considera:</p>
+                    <ul>
+                        <li><strong>Editar el texto:</strong> <a href="{% url 'admin_opcion_edit' opcion.id %}">Modifica el contenido</a> si no es apropiado</li>
+                        <li><strong>Cambiar si es correcta:</strong> Ajusta si debe ser correcta o incorrecta</li>
+                        <li><strong>Agregar más opciones:</strong> <a href="{% url 'admin_opcion_create' opcion.pregunta.id %}">Crea opciones adicionales</a> antes de eliminar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirmDelete');
+    const deleteButton = document.getElementById('deleteButton');
+    
+    confirmCheckbox.addEventListener('change', function() {
+        deleteButton.disabled = !this.checked;
+    });
+    
+    // Confirmación adicional al enviar
+    deleteButton.addEventListener('click', function(e) {
+        if (!confirm('¿Estás seguro de eliminar esta opción? Esta acción NO se puede deshacer.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Participaciones - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-clipboard-check text-primary"></i> Participaciones de Usuarios</h2>
+                    <p class="text-muted">Supervisa y analiza la actividad de los usuarios en los quizzes</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Estadísticas rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary h-100">
+                <div class="card-body">
+                    <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-primary">{{ participaciones|length }}</h3>
+                    <p class="text-muted">Participaciones Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success h-100">
+                <div class="card-body">
+                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-success">{{ participaciones.count }}</h3>
+                    <p class="text-muted">Completadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning h-100">
+                <div class="card-body">
+                    <i class="bi bi-trophy text-warning" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-warning">{{ participaciones|promedio_puntajes|floatformat:1 }}</h3>
+                    <p class="text-muted">Promedio General</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info h-100">
+                <div class="card-body">
+                    <i class="bi bi-calendar-event text-info" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-info">
+                        {% if participaciones %}
+                            {{ participaciones.first.fecha|date:"d/m" }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </h3>
+                    <p class="text-muted">Última Actividad</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de participaciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Historial de Participaciones
+                            <span class="badge bg-primary">{{ participaciones.count }}</span>
+                        </h5>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="filtrarPorPuntaje('todos')">
+                            Todos
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="filtrarPorPuntaje('alto')">
+                            Puntaje Alto
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="filtrarPorPuntaje('medio')">
+                            Puntaje Medio
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="filtrarPorPuntaje('bajo')">
+                            Puntaje Bajo
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if participaciones %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="participacionesTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Quiz</th>
+                                        <th class="text-center">Puntaje</th>
+                                        <th class="text-center">Progreso</th>
+                                        <th class="text-center">Tiempo</th>
+                                        <th>Fecha</th>
+                                        <th class="text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for participacion in participaciones %}
+                                        <tr data-puntaje="{{ participacion.puntaje }}" class="participacion-row">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                         style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                                        {{ participacion.usuario.first_name|first|default:participacion.usuario.username|first|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">
+                                                            {% if participacion.usuario.first_name %}
+                                                                {{ participacion.usuario.first_name }} {{ participacion.usuario.last_name }}
+                                                            {% else %}
+                                                                {{ participacion.usuario.username }}
+                                                            {% endif %}
+                                                        </div>
+                                                        <small class="text-muted">@{{ participacion.usuario.username }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">{{ participacion.quiz.titulo|truncatechars:30 }}</div>
+                                                    <small class="text-muted">{{ participacion.quiz.categoria }}</small>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="fw-bold fs-5 
+                                                    {% if participacion.puntaje >= 80 %}text-success
+                                                    {% elif participacion.puntaje >= 60 %}text-warning
+                                                    {% else %}text-danger{% endif %}">
+                                                    {{ participacion.puntaje }}
+                                                </div>
+                                                <small class="text-muted">/ 100</small>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="progress" style="height: 8px; width: 80px; margin: 0 auto;">
+                                                    <div class="progress-bar 
+                                                        {% if participacion.puntaje >= 80 %}bg-success
+                                                        {% elif participacion.puntaje >= 60 %}bg-warning
+                                                        {% else %}bg-danger{% endif %}" 
+                                                         style="width: {{ participacion.puntaje }}%"></div>
+                                                </div>
+                                                <small class="text-muted">{{ participacion.puntaje }}%</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if participacion.tiempo_total %}
+                                                    <span class="badge bg-info">
+                                                        {% if participacion.tiempo_total < 60 %}
+                                                            {{ participacion.tiempo_total|floatformat:0 }}s
+                                                        {% else %}
+                                                            {{ participacion.tiempo_total|dividir:60|floatformat:1 }}m
+                                                        {% endif %}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-muted">--</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div>{{ participacion.fecha|date:"d/m/Y" }}</div>
+                                                <small class="text-muted">{{ participacion.fecha|date:"H:i" }}</small>
+                                            </td>
+                                            <td class="text-center">
+                                                {% if participacion.completado %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Completado
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock"></i> En progreso
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-clipboard-check text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">No hay participaciones</h4>
+                            <p class="text-muted">Los usuarios aún no han participado en ningún quiz</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por quiz (si hay participaciones) -->
+    {% if participaciones %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart"></i> Análisis por Quiz
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% regroup participaciones by quiz as quizzes_participaciones %}
+                            {% for quiz_grupo in quizzes_participaciones %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card border-info h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary">{{ quiz_grupo.grouper.titulo|truncatechars:25 }}</h6>
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <strong class="text-primary">{{ quiz_grupo.list|length }}</strong>
+                                                    <br><small class="text-muted">Participaciones</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <strong class="text-success">{{ quiz_grupo.list|promedio_puntajes|floatformat:1 }}</strong>
+                                                    <br><small class="text-muted">Promedio</small>
+                                                </div>
+                                                <div class="col-4">
+                                                    <strong class="text-info">{{ quiz_grupo.list|mejor_puntaje }}</strong>
+                                                    <br><small class="text-muted">Máximo</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function filtrarPorPuntaje(categoria) {
+    const rows = document.querySelectorAll('.participacion-row');
+    
+    rows.forEach(row => {
+        const puntaje = parseInt(row.dataset.puntaje);
+        let mostrar = true;
+        
+        switch(categoria) {
+            case 'alto':
+                mostrar = puntaje >= 80;
+                break;
+            case 'medio':
+                mostrar = puntaje >= 60 && puntaje < 80;
+                break;
+            case 'bajo':
+                mostrar = puntaje < 60;
+                break;
+            case 'todos':
+            default:
+                mostrar = true;
+        }
+        
+        row.style.display = mostrar ? '' : 'none';
+    });
+    
+    // Actualizar botones activos
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// Hacer la tabla responsiva con DataTables si está disponible
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof $.fn.DataTable !== 'undefined' && document.getElementById('participacionesTable')) {
+        $('#participacionesTable').DataTable({
+            order: [[5, 'desc']], // Ordenar por fecha descendente
+            pageLength: 25,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+            },
+            columnDefs: [
+                { orderable: false, targets: [2, 3] } // Desactivar ordenamiento en columnas de progreso
+            ]
+        });
+    }
+});
+</script>
+{% endblock %}

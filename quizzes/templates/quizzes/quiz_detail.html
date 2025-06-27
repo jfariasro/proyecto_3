@@ -1,23 +1,288 @@
 {% extends 'base.html' %}
+
+{% block title %}{{ quiz.titulo }} - Plataforma Quiz Interactiva{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1>{{ quiz.titulo }}</h1>
-    <p class="lead">{{ quiz.descripcion }}</p>
-    <h4 class="mt-4">Preguntas</h4>
-    <ul class="list-group mb-4">
-        {% for pregunta in preguntas %}
-        <li class="list-group-item">
-            {{ pregunta.texto }}
-            <ul class="mt-2">
-                {% for opcion in pregunta.opciones.all %}
-                <li>{{ opcion.texto }}</li>
+<div class="container my-5">
+    <!-- Quiz Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="mb-0">
+                                <i class="bi bi-patch-question-fill"></i> {{ quiz.titulo }}
+                            </h1>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-light text-dark">
+                                <i class="bi bi-list-ol"></i> {{ preguntas|length }} pregunta{{ preguntas|length|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="lead">{{ quiz.descripcion }}</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3"></i> Creado: {{ quiz.fecha_creacion|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <small class="text-muted">
+                                <i class="bi bi-check-circle"></i> Estado: 
+                                {% if quiz.activo %}
+                                    <span class="text-success">Activo</span>
+                                {% else %}
+                                    <span class="text-danger">Inactivo</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Form -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <form id="quizForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                {% for pregunta in preguntas %}
+                <div class="card mb-4 border-0 shadow">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="bi bi-question-circle"></i> 
+                            Pregunta {{ forloop.counter }}: {{ pregunta.texto }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for opcion in pregunta.opciones.all %}
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check p-3 border rounded option-card" style="cursor: pointer;">
+                                    <input class="form-check-input" type="radio" 
+                                           name="pregunta_{{ pregunta.id }}" 
+                                           id="opcion_{{ opcion.id }}" 
+                                           value="{{ opcion.id }}" required>
+                                    <label class="form-check-label w-100" for="opcion_{{ opcion.id }}" style="cursor: pointer;">
+                                        <strong>{% if forloop.counter == 1 %}A{% elif forloop.counter == 2 %}B{% elif forloop.counter == 3 %}C{% else %}D{% endif %})</strong> {{ opcion.texto }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="invalid-feedback">
+                            Por favor, selecciona una respuesta para esta pregunta.
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h4>No hay preguntas en este quiz</h4>
+                    <p>Este quiz aún no tiene preguntas configuradas.</p>
+                </div>
                 {% endfor %}
-            </ul>
-        </li>
-        {% empty %}
-        <li class="list-group-item">No hay preguntas en este quiz.</li>
-        {% endfor %}
-    </ul>
-    <a href="/" class="btn btn-secondary">Volver a la lista</a>
+
+                {% if preguntas %}
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success btn-lg me-3">
+                        <i class="bi bi-check-circle"></i> Enviar Respuestas
+                    </button>
+                    <a href="/" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-arrow-left"></i> Volver a la lista
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-center">
+                    <a href="/" class="btn btn-primary btn-lg">
+                        <i class="bi bi-arrow-left"></i> Volver a la lista
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
 </div>
+
+<!-- Results Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-trophy"></i> Resultados del Quiz
+                </h5>
+            </div>
+            <div class="modal-body" id="resultsContent">
+                <!-- Los resultados se cargarán aquí -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Intentar de nuevo
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    <i class="bi bi-house"></i> Ir al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .option-card {
+        transition: all 0.3s ease;
+    }
+    .option-card:hover {
+        background-color: #f8f9fa;
+        border-color: #667eea !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .form-check-input:checked + .form-check-label {
+        color: #667eea;
+        font-weight: bold;
+    }
+    .option-card:has(.form-check-input:checked) {
+        background-color: #e7f1ff;
+        border-color: #667eea !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quizForm');
+    const optionCards = document.querySelectorAll('.option-card');
+    
+    // Manejar clicks en las tarjetas de opciones
+    optionCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Remover selección de otras opciones en la misma pregunta
+            const preguntaName = radio.name;
+            const otherCards = document.querySelectorAll(`input[name="${preguntaName}"]`);
+            otherCards.forEach(otherRadio => {
+                const otherCard = otherRadio.closest('.option-card');
+                if (otherRadio !== radio) {
+                    otherCard.classList.remove('selected');
+                }
+            });
+            
+            this.classList.add('selected');
+        });
+    });
+    
+    // Manejar envío del formulario
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validar que todas las preguntas tengan respuesta
+            const preguntas = document.querySelectorAll('input[type="radio"]');
+            const preguntasNames = [...new Set(Array.from(preguntas).map(p => p.name))];
+            let todasRespondidas = true;
+            const respuestas = {};
+            
+            preguntasNames.forEach(name => {
+                const respuestaSeleccionada = document.querySelector(`input[name="${name}"]:checked`);
+                if (!respuestaSeleccionada) {
+                    todasRespondidas = false;
+                } else {
+                    const preguntaId = name.split('_')[1];
+                    respuestas[preguntaId] = respuestaSeleccionada.value;
+                }
+            });
+            
+            if (!todasRespondidas) {
+                alert('Por favor, responde todas las preguntas antes de enviar.');
+                return;
+            }
+            
+            // Enviar respuestas al servidor
+            fetch(`/quiz/{{ quiz.id }}/submit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    respuestas: respuestas,
+                    tiempo_total: Math.floor((Date.now() - startTime) / 1000)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarResultados(data.puntaje, data.total, data.porcentaje);
+                } else {
+                    alert('Error al enviar las respuestas');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al enviar las respuestas');
+            });
+        });
+    }
+});
+
+let startTime = Date.now();
+
+function mostrarResultados(puntaje, total, porcentaje) {
+    let mensaje = '';
+    let color = '';
+    
+    if (porcentaje >= 80) {
+        mensaje = '¡Excelente trabajo!';
+        color = 'text-success';
+    } else if (porcentaje >= 60) {
+        mensaje = '¡Buen trabajo!';
+        color = 'text-info';
+    } else {
+        mensaje = '¡Sigue practicando!';
+        color = 'text-warning';
+    }
+    
+    const resultadosHTML = `
+        <div class="text-center">
+            <div class="mb-4">
+                <div class="display-4 ${color}">
+                    ${porcentaje}%
+                </div>
+                <h3 class="${color}">${mensaje}</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                            <h5 class="text-success mt-2">Correctas</h5>
+                            <h3>${puntaje}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-danger">
+                        <div class="card-body text-center">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                            <h5 class="text-danger mt-2">Incorrectas</h5>
+                            <h3>${total - puntaje}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('resultsContent').innerHTML = resultadosHTML;
+    const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    modal.show();
+}
+</script>
 {% endblock %}

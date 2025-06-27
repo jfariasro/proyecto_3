@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Quiz - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-trash text-danger"></i> Eliminar Quiz</h2>
+                    <p class="text-muted">Confirma la eliminación del quiz</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_quiz_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a la Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmación de eliminación -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer. Se eliminará permanentemente:
+                        <ul class="mt-2 mb-0">
+                            <li>El quiz y toda su información</li>
+                            <li>Todas las preguntas asociadas</li>
+                            <li>Todas las opciones de respuesta</li>
+                            <li>Todas las participaciones y respuestas de usuarios</li>
+                        </ul>
+                    </div>
+
+                    <!-- Información del quiz -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-collection"></i> {{ quiz.titulo }}
+                            </h5>
+                            <p class="card-text">{{ quiz.descripcion }}</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Categoría:</strong> {{ quiz.categoria }}</li>
+                                        <li><strong>Dificultad:</strong> {{ quiz.get_dificultad_display }}</li>
+                                        <li><strong>Estado:</strong> 
+                                            {% if quiz.activo %}
+                                                <span class="badge bg-success">Activo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactivo</span>
+                                            {% endif %}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Preguntas:</strong> {{ quiz.preguntas.count }}</li>
+                                        <li><strong>Participaciones:</strong> {{ quiz.participaciones.count }}</li>
+                                        <li><strong>Creado:</strong> {{ quiz.fecha_creacion|date:"d/m/Y H:i" }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% if quiz.tiempo_limite_minutos %}
+                                <p class="mb-0">
+                                    <strong>Tiempo límite:</strong> {{ quiz.tiempo_limite_minutos }} minutos
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas de impacto -->
+                    {% if quiz.participaciones.count > 0 %}
+                        <div class="alert alert-info mt-3" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Impacto de la eliminación:</strong><br>
+                            Se perderán los datos de <strong>{{ quiz.participaciones.count }} participación(es)</strong> de usuarios.
+                            {% if quiz.participaciones.filter.completado %}
+                                Esto incluye {{ quiz.participaciones.filter.completado.count }} participación(es) completada(s).
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                <label class="form-check-label fw-bold text-danger" for="confirmDelete">
+                                    Confirmo que quiero eliminar permanentemente este quiz y todos sus datos asociados
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'admin_quiz_list' %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <a href="{% url 'admin_quiz_edit' quiz.id %}" class="btn btn-outline-primary me-md-2">
+                                <i class="bi bi-pencil"></i> Editar en su lugar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="bi bi-trash"></i> Eliminar Permanentemente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alternativas -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb text-info"></i> Alternativas a la Eliminación</h6>
+                </div>
+                <div class="card-body">
+                    <p>Si no estás seguro de eliminar este quiz, considera estas opciones:</p>
+                    <ul>
+                        <li><strong>Desactivar:</strong> Puedes <a href="{% url 'admin_quiz_edit' quiz.id %}">editar el quiz</a> y desactivarlo temporalmente</li>
+                        <li><strong>Modificar:</strong> Actualiza el contenido en lugar de eliminarlo</li>
+                        <li><strong>Exportar datos:</strong> Guarda las participaciones antes de eliminar (función futura)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirmDelete');
+    const deleteButton = document.getElementById('deleteButton');
+    
+    confirmCheckbox.addEventListener('change', function() {
+        deleteButton.disabled = !this.checked;
+    });
+    
+    // Confirmación adicional al enviar
+    deleteButton.addEventListener('click', function(e) {
+        if (!confirm('¿Estás absolutamente seguro? Esta acción NO se puede deshacer.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

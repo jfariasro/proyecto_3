@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración - Plataforma Quiz Interactiva{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header del panel -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                <div class="card-body text-center">
+                    <i class="bi bi-speedometer2" style="font-size: 3rem;"></i>
+                    <h2 class="mt-2">Panel de Administración</h2>
+                    <p class="mb-0">Gestiona quizzes, preguntas y supervisa la actividad de la plataforma</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary h-100">
+                <div class="card-body">
+                    <i class="bi bi-collection text-primary" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-primary">{{ stats.total_quizzes }}</h3>
+                    <p class="text-muted">Quizzes Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success h-100">
+                <div class="card-body">
+                    <i class="bi bi-question-circle text-success" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-success">{{ stats.total_preguntas }}</h3>
+                    <p class="text-muted">Preguntas Creadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning h-100">
+                <div class="card-body">
+                    <i class="bi bi-clipboard-check text-warning" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-warning">{{ stats.total_participaciones }}</h3>
+                    <p class="text-muted">Participaciones</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info h-100">
+                <div class="card-body">
+                    <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-info">{{ stats.total_usuarios }}</h3>
+                    <p class="text-muted">Usuarios Registrados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-lightning"></i> Acciones Rápidas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin_quiz_create' %}" class="btn btn-primary w-100 py-3">
+                                <i class="bi bi-plus-circle"></i><br>
+                                <strong>Crear Quiz</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin_quiz_list' %}" class="btn btn-success w-100 py-3">
+                                <i class="bi bi-list-ul"></i><br>
+                                <strong>Gestionar Quizzes</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin_participaciones' %}" class="btn btn-warning w-100 py-3">
+                                <i class="bi bi-graph-up"></i><br>
+                                <strong>Ver Reportes</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="/admin/" class="btn btn-secondary w-100 py-3" target="_blank">
+                                <i class="bi bi-gear"></i><br>
+                                <strong>Django Admin</strong>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participaciones recientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-clock-history"></i> Participaciones Recientes</h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_participaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Quiz</th>
+                                    <th>Puntaje</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participacion in recent_participaciones %}
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                        <strong>{{ participacion.usuario.username }}</strong>
+                                    </td>
+                                    <td>{{ participacion.quiz.titulo }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ participacion.puntaje }}/{{ participacion.quiz.preguntas.count }}
+                                        </span>
+                                    </td>
+                                    <td>{{ participacion.fecha|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'admin_participaciones' %}" class="btn btn-outline-primary">
+                            Ver todas las participaciones
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No hay participaciones recientes</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

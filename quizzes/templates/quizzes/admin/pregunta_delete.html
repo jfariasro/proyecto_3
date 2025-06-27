@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Eliminar Pregunta - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-trash text-danger"></i> Eliminar Pregunta</h2>
+                    <p class="text-muted">Quiz: <strong>{{ pregunta.quiz.titulo }}</strong></p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_quiz_edit' pregunta.quiz.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmación de eliminación -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación de Pregunta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>¡Atención!</strong> Esta acción no se puede deshacer. Se eliminará permanentemente:
+                        <ul class="mt-2 mb-0">
+                            <li>La pregunta y su texto</li>
+                            <li>Todas las opciones de respuesta asociadas ({{ pregunta.opciones.count }})</li>
+                            <li>Todas las respuestas de usuarios a esta pregunta</li>
+                        </ul>
+                    </div>
+
+                    <!-- Información de la pregunta -->
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                <i class="bi bi-question-circle"></i> Pregunta a Eliminar
+                            </h6>
+                            <p class="card-text fs-5">{{ pregunta.texto }}</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Tipo:</strong> {{ pregunta.get_tipo_display }}</li>
+                                        <li><strong>Puntos:</strong> {{ pregunta.puntos|default:"1" }}</li>
+                                        <li><strong>Opciones:</strong> {{ pregunta.opciones.count }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><strong>Quiz:</strong> {{ pregunta.quiz.titulo }}</li>
+                                        <li><strong>Respuestas correctas:</strong> {{ pregunta.opciones.all|opciones_correctas }}</li>
+                                        <li><strong>Fecha creación:</strong> {{ pregunta.fecha_creacion|date:"d/m/Y H:i" }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% if pregunta.explicacion %}
+                                <div class="mt-2">
+                                    <strong>Explicación:</strong>
+                                    <p class="text-muted">{{ pregunta.explicacion }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Opciones que se eliminarán -->
+                    {% if pregunta.opciones.exists %}
+                        <div class="card mt-3 border-warning">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-list-ul text-warning"></i> 
+                                    Opciones que se eliminarán ({{ pregunta.opciones.count }})
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                {% for opcion in pregunta.opciones.all %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if opcion.es_correcta %}
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            <span class="badge bg-success me-2">Correcta</span>
+                                        {% else %}
+                                            <i class="bi bi-circle text-muted me-2"></i>
+                                            <span class="badge bg-secondary me-2">Incorrecta</span>
+                                        {% endif %}
+                                        <span>{{ opcion.texto }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulario de confirmación -->
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                                <label class="form-check-label fw-bold text-danger" for="confirmDelete">
+                                    Confirmo que quiero eliminar permanentemente esta pregunta y todas sus opciones
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'admin_quiz_edit' pregunta.quiz.id %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <a href="{% url 'admin_pregunta_edit' pregunta.id %}" class="btn btn-outline-primary me-md-2">
+                                <i class="bi bi-pencil"></i> Editar en su lugar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                                <i class="bi bi-trash"></i> Eliminar Pregunta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Impacto en el quiz -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle text-info"></i> Impacto en el Quiz</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Antes de eliminar:</h6>
+                            <ul>
+                                <li>Preguntas totales: <strong>{{ pregunta.quiz.preguntas.count }}</strong></li>
+                                <li>Puntos totales: <strong>{{ pregunta.quiz.preguntas.aggregate.sum__puntos|default:pregunta.quiz.preguntas.count }}</strong></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Después de eliminar:</h6>
+                            <ul>
+                                <li>Preguntas restantes: <strong>{{ pregunta.quiz.preguntas.count|add:"-1" }}</strong></li>
+                                <li>Puntos perdidos: <strong>{{ pregunta.puntos|default:1 }}</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {% if pregunta.quiz.preguntas.count == 1 %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>¡Advertencia!</strong> Esta es la última pregunta del quiz. 
+                            Si la eliminas, el quiz quedará sin preguntas y no será visible para los usuarios.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirmDelete');
+    const deleteButton = document.getElementById('deleteButton');
+    
+    confirmCheckbox.addEventListener('change', function() {
+        deleteButton.disabled = !this.checked;
+    });
+    
+    // Confirmación adicional al enviar
+    deleteButton.addEventListener('click', function(e) {
+        if (!confirm('¿Estás seguro de eliminar esta pregunta? Esta acción NO se puede deshacer.')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

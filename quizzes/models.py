@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Quiz(models.Model):
     """Representa un quiz educativo."""
@@ -6,6 +7,7 @@ class Quiz(models.Model):
     descripcion = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)
+    tiempo_limite = models.IntegerField(default=0, help_text="Tiempo en minutos (0 = sin límite)")
 
     def __str__(self):
         return self.titulo
@@ -29,13 +31,18 @@ class Opcion(models.Model):
 
 class Participacion(models.Model):
     """Registro de la participación de un usuario en un quiz."""
-    usuario = models.CharField(max_length=150)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     puntaje = models.IntegerField(default=0)
+    tiempo_total = models.DurationField(null=True, blank=True)
+    completado = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('usuario', 'quiz')
 
     def __str__(self):
-        return f"{self.usuario} - {self.quiz.titulo} ({self.puntaje})"
+        return f"{self.usuario.username} - {self.quiz.titulo} ({self.puntaje})"
 
 class Respuesta(models.Model):
     """Respuesta de un usuario a una pregunta en un quiz."""
@@ -44,4 +51,4 @@ class Respuesta(models.Model):
     opcion = models.ForeignKey(Opcion, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.participacion.usuario} - {self.pregunta.texto}"
+        return f"{self.participacion.usuario.username} - {self.pregunta.texto}"

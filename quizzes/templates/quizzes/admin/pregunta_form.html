@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-plus-circle text-success"></i> {{ title }}</h2>
+                    <p class="text-muted">Quiz: <strong>{{ quiz.titulo }}</strong></p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_quiz_edit' quiz.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Nueva Pregunta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Texto de la pregunta -->
+                        <div class="mb-3">
+                            <label for="{{ form.texto.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-chat-text text-primary"></i> Texto de la Pregunta *
+                            </label>
+                            {{ form.texto }}
+                            {% if form.texto.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.texto.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Escribe la pregunta de forma clara y concisa</div>
+                        </div>
+
+                        <!-- Tipo de pregunta y puntos -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-ui-radios text-info"></i> Tipo de Pregunta
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tipo.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Selecciona el tipo de respuesta</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.puntos.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-award text-warning"></i> Puntos
+                                </label>
+                                {{ form.puntos }}
+                                {% if form.puntos.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.puntos.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Puntos que otorga esta pregunta</div>
+                            </div>
+                        </div>
+
+                        <!-- Explicación -->
+                        <div class="mb-4">
+                            <label for="{{ form.explicacion.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-info-circle text-secondary"></i> Explicación (Opcional)
+                            </label>
+                            {{ form.explicacion }}
+                            {% if form.explicacion.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.explicacion.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Explicación que se mostrará después de responder (opcional)</div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'admin_quiz_edit' quiz.id %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Crear Pregunta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información del quiz -->
+            <div class="card mt-4 border-info">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle text-info"></i> Información del Quiz</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">{{ quiz.titulo }}</h6>
+                            <p class="text-muted small">{{ quiz.descripcion }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><strong>Categoría:</strong> {{ quiz.categoria }}</li>
+                                <li><strong>Dificultad:</strong> {{ quiz.get_dificultad_display }}</li>
+                                <li><strong>Preguntas actuales:</strong> {{ quiz.preguntas.count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pasos siguientes -->
+            <div class="card mt-4 border-success">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-list-check text-success"></i> Pasos Siguientes</h6>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Después de crear la pregunta, podrás agregar las opciones de respuesta</li>
+                        <li>Asegúrate de marcar al menos una opción como correcta</li>
+                        <li>Puedes editar la pregunta en cualquier momento</li>
+                        <li>Las preguntas sin opciones de respuesta no aparecerán en el quiz</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar clases de Bootstrap a los campos del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    // Preview del tipo de pregunta
+    const tipoSelect = document.querySelector('select[name="tipo"]');
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', function() {
+            const helpText = this.closest('.mb-3').querySelector('.form-text');
+            switch(this.value) {
+                case 'multiple':
+                    helpText.textContent = 'Los usuarios podrán seleccionar una sola opción correcta';
+                    break;
+                case 'verdadero_falso':
+                    helpText.textContent = 'Pregunta de verdadero o falso (se crearán automáticamente las opciones)';
+                    break;
+                case 'multiple_respuesta':
+                    helpText.textContent = 'Los usuarios podrán seleccionar múltiples opciones correctas';
+                    break;
+                default:
+                    helpText.textContent = 'Selecciona el tipo de respuesta';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

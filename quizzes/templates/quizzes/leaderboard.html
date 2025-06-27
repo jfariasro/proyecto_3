@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Tabla de Posiciones - Plataforma Quiz Interactiva{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1 class="display-4">
+                <i class="bi bi-trophy text-warning"></i> Tabla de Posiciones
+            </h1>
+            <p class="lead">Los mejores usuarios de la plataforma</p>
+        </div>
+    </div>
+
+    <!-- Tabla de posiciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                    <h4 class="mb-0"><i class="bi bi-award"></i> Top 10 Usuarios</h4>
+                </div>
+                <div class="card-body">
+                    {% if top_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="10%">Posición</th>
+                                    <th width="40%">Usuario</th>
+                                    <th width="25%">Promedio</th>
+                                    <th width="25%">Quizzes Completados</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_users %}
+                                <tr {% if user.usuario__username == request.user.username %}class="table-info"{% endif %}>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                            <i class="bi bi-trophy-fill text-warning" style="font-size: 1.5rem;"></i>
+                                            <span class="fw-bold">1°</span>
+                                        {% elif forloop.counter == 2 %}
+                                            <i class="bi bi-trophy-fill text-secondary" style="font-size: 1.3rem;"></i>
+                                            <span class="fw-bold">2°</span>
+                                        {% elif forloop.counter == 3 %}
+                                            <i class="bi bi-trophy-fill text-warning" style="font-size: 1.1rem; color: #cd7f32 !important;"></i>
+                                            <span class="fw-bold">3°</span>
+                                        {% else %}
+                                            <span class="fw-bold">{{ forloop.counter }}°</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle text-primary me-2" style="font-size: 1.5rem;"></i>
+                                            <div>
+                                                <strong>{{ user.usuario__username }}</strong>
+                                                {% if user.usuario__first_name %}
+                                                    <br><small class="text-muted">{{ user.usuario__first_name }} {{ user.usuario__last_name }}</small>
+                                                {% endif %}
+                                                {% if user.usuario__username == request.user.username %}
+                                                    <span class="badge bg-info ms-2">Tú</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% with promedio=user.promedio_puntaje %}
+                                                {% if promedio >= 8 %}
+                                                    <span class="badge bg-success me-2">{{ promedio|floatformat:1 }}</span>
+                                                    <div class="progress flex-fill" style="height: 8px;">
+                                                        <div class="progress-bar bg-success" style="width: {{ user.progreso_width }}%"></div>
+                                                    </div>
+                                                {% elif promedio >= 6 %}
+                                                    <span class="badge bg-warning me-2">{{ promedio|floatformat:1 }}</span>
+                                                    <div class="progress flex-fill" style="height: 8px;">
+                                                        <div class="progress-bar bg-warning" style="width: {{ user.progreso_width }}%"></div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="badge bg-danger me-2">{{ promedio|floatformat:1 }}</span>
+                                                    <div class="progress flex-fill" style="height: 8px;">
+                                                        <div class="progress-bar bg-danger" style="width: {{ user.progreso_width }}%"></div>
+                                                    </div>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ user.total_quizzes }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-trophy text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">Aún no hay participaciones</h4>
+                        <p class="text-muted">¡Sé el primero en completar un quiz!</p>
+                        <a href="{% url 'quiz_list' %}" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i> Comenzar ahora
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'quiz_list' %}" class="btn btn-primary me-2">
+            <i class="bi bi-house"></i> Volver al inicio
+        </a>
+        <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-person"></i> Mi perfil
+        </a>
+    </div>
+</div>
+{% endblock %}

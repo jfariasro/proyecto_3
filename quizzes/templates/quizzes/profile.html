@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}Mi Perfil - Plataforma Quiz Interactiva{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header del perfil -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                <div class="card-body text-center">
+                    <i class="bi bi-person-circle" style="font-size: 4rem;"></i>
+                    <h2 class="mt-2">{{ user.username }}</h2>
+                    <p class="mb-0">Miembro desde {{ user.date_joined|date:"F Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-trophy text-primary" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-primary">{{ stats.total_quizzes }}</h3>
+                    <p class="text-muted">Quizzes Completados</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-success">{{ stats.promedio_puntaje|floatformat:1 }}</h3>
+                    <p class="text-muted">Promedio de Puntaje</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 text-warning">{{ stats.mejor_puntaje }}</h3>
+                    <p class="text-muted">Mejor Puntaje</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de participaciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-clock-history"></i> Historial de Quizzes</h4>
+                </div>
+                <div class="card-body">
+                    {% if participaciones %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Quiz</th>
+                                    <th>Puntaje</th>
+                                    <th>Porcentaje</th>
+                                    <th>Fecha</th>
+                                    <th>Tiempo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participacion in participaciones %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ participacion.quiz.titulo }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ participacion.quiz.descripcion|truncatewords:10 }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ participacion.puntaje }}/{{ participacion.quiz.preguntas.count }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% with total_preguntas=participacion.quiz.preguntas.count %}
+                                            {% with porcentaje=participacion.puntaje|div:total_preguntas|mul:100 %}
+                                                {% if porcentaje >= 80 %}
+                                                    <span class="badge bg-success">{{ porcentaje|floatformat:0 }}%</span>
+                                                {% elif porcentaje >= 60 %}
+                                                    <span class="badge bg-warning">{{ porcentaje|floatformat:0 }}%</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ porcentaje|floatformat:0 }}%</span>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>{{ participacion.fecha|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        {% if participacion.tiempo_total %}
+                                            {{ participacion.tiempo_total|date:"i:s" }} min
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No has completado ningún quiz aún</h5>
+                        <a href="{% url 'quiz_list' %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-play-circle"></i> Comenzar tu primer quiz
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'quiz_list' %}" class="btn btn-primary me-2">
+            <i class="bi bi-house"></i> Volver al inicio
+        </a>
+        <a href="{% url 'leaderboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-trophy"></i> Ver tabla de posiciones
+        </a>
+    </div>
+</div>
+{% endblock %}

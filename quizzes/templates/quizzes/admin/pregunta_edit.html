@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}{{ title }} - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-pencil-square text-success"></i> {{ title }}</h2>
+                    <p class="text-muted">Quiz: <strong>{{ pregunta.quiz.titulo }}</strong></p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_quiz_edit' pregunta.quiz.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver al Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Formulario de edición de pregunta -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Editar Pregunta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Texto de la pregunta -->
+                        <div class="mb-3">
+                            <label for="{{ form.texto.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-chat-text text-primary"></i> Texto *
+                            </label>
+                            {{ form.texto }}
+                            {% if form.texto.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.texto.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Tipo y puntos en fila -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-ui-radios text-info"></i> Tipo
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tipo.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.puntos.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-award text-warning"></i> Puntos
+                                </label>
+                                {{ form.puntos }}
+                                {% if form.puntos.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.puntos.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Explicación -->
+                        <div class="mb-4">
+                            <label for="{{ form.explicacion.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-info-circle text-secondary"></i> Explicación
+                            </label>
+                            {{ form.explicacion }}
+                            {% if form.explicacion.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.explicacion.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Actualizar Pregunta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de opciones -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Opciones de Respuesta
+                        <span class="badge bg-light text-dark ms-2">{{ opciones.count }}</span>
+                    </h5>
+                    <a href="{% url 'admin_opcion_create' pregunta.id %}" class="btn btn-light btn-sm">
+                        <i class="bi bi-plus"></i> Agregar Opción
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if opciones %}
+                        <div class="list-group list-group-flush">
+                            {% for opcion in opciones %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center mb-1">
+                                                {% if opcion.es_correcta %}
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    <span class="badge bg-success me-2">Correcta</span>
+                                                {% else %}
+                                                    <i class="bi bi-circle text-muted me-2"></i>
+                                                    <span class="badge bg-secondary me-2">Incorrecta</span>
+                                                {% endif %}
+                                                <strong>Opción {{ forloop.counter }}</strong>
+                                            </div>
+                                            <p class="mb-0">{{ opcion.texto }}</p>
+                                        </div>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'admin_opcion_edit' opcion.id %}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'admin_opcion_delete' opcion.id %}" 
+                                               class="btn btn-outline-danger btn-sm" 
+                                               title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-list-ul text-muted" style="font-size: 3rem;"></i>
+                            <h6 class="text-muted mt-2">No hay opciones</h6>
+                            <p class="text-muted small">Agrega opciones de respuesta para esta pregunta</p>
+                            <a href="{% url 'admin_opcion_create' pregunta.id %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle"></i> Crear Primera Opción
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Validaciones y advertencias -->
+            <div class="card mt-3 {% if opciones|tiene_opciones_correctas %}border-success{% else %}border-warning{% endif %}">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-check {% if opciones|tiene_opciones_correctas %}text-success{% else %}text-warning{% endif %}"></i> 
+                        Estado de Validación
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if opciones.count == 0 %}
+                        <div class="alert alert-warning mb-0" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Sin opciones:</strong> Esta pregunta no tiene opciones de respuesta.
+                        </div>
+                    {% elif not opciones|tiene_opciones_correctas %}
+                        <div class="alert alert-warning mb-0" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Sin respuesta correcta:</strong> Marca al menos una opción como correcta.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success mb-0" role="alert">
+                            <i class="bi bi-check-circle"></i>
+                            <strong>Pregunta válida:</strong> Tiene opciones y al menos una respuesta correcta.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row mt-3 text-center">
+                        <div class="col-4">
+                            <h6 class="text-primary">{{ opciones.count }}</h6>
+                            <small class="text-muted">Opciones</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-success">{{ opciones|opciones_correctas }}</h6>
+                            <small class="text-muted">Correctas</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-info">{{ pregunta.puntos|default:1 }}</h6>
+                            <small class="text-muted">Puntos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del tipo de pregunta -->
+            <div class="card mt-3 border-info">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-info-circle text-info"></i> Tipo: {{ pregunta.get_tipo_display }}</h6>
+                </div>
+                <div class="card-body">
+                    {% if pregunta.tipo == 'multiple' %}
+                        <p class="mb-0">Los usuarios podrán seleccionar <strong>una sola opción</strong>. Debe haber exactamente una respuesta correcta.</p>
+                    {% elif pregunta.tipo == 'verdadero_falso' %}
+                        <p class="mb-0">Pregunta de <strong>verdadero o falso</strong>. Solo necesitas dos opciones: una verdadera y una falsa.</p>
+                    {% elif pregunta.tipo == 'multiple_respuesta' %}
+                        <p class="mb-0">Los usuarios podrán seleccionar <strong>múltiples opciones</strong>. Puede haber varias respuestas correctas.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar clases de Bootstrap a los campos del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}

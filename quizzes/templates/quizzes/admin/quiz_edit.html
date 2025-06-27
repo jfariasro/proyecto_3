@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="bi bi-pencil-square text-primary"></i> {{ title }}</h2>
+                    <p class="text-muted">Edita el quiz y gestiona sus preguntas</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_quiz_list' %}" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-left"></i> Volver a la Lista
+                    </a>
+                    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-outline-info" target="_blank">
+                        <i class="bi bi-eye"></i> Vista Previa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Formulario de edición del quiz -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-collection"></i> Información del Quiz
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Título -->
+                        <div class="mb-3">
+                            <label for="{{ form.titulo.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-type text-primary"></i> Título *
+                            </label>
+                            {{ form.titulo }}
+                            {% if form.titulo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.titulo.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="{{ form.descripcion.id_for_label }}" class="form-label fw-bold">
+                                <i class="bi bi-text-paragraph text-success"></i> Descripción
+                            </label>
+                            {{ form.descripcion }}
+                            {% if form.descripcion.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.descripcion.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Categoría y Dificultad en fila -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.categoria.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-tag text-info"></i> Categoría
+                                </label>
+                                {{ form.categoria }}
+                                {% if form.categoria.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.categoria.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.dificultad.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-speedometer text-warning"></i> Dificultad
+                                </label>
+                                {{ form.dificultad }}
+                                {% if form.dificultad.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.dificultad.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Tiempo límite y Estado -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tiempo_limite_minutos.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-clock text-danger"></i> Tiempo (min)
+                                </label>
+                                {{ form.tiempo_limite_minutos }}
+                                {% if form.tiempo_limite_minutos.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tiempo_limite_minutos.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3 d-flex align-items-end">
+                                <div class="form-check form-switch">
+                                    {{ form.activo }}
+                                    <label class="form-check-label fw-bold" for="{{ form.activo.id_for_label }}">
+                                        <i class="bi bi-toggle2-on text-success"></i> Activo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Actualizar Quiz
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de preguntas -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Preguntas del Quiz
+                        <span class="badge bg-light text-dark ms-2">{{ preguntas.count }}</span>
+                    </h5>
+                    <a href="{% url 'admin_pregunta_create' quiz.id %}" class="btn btn-light btn-sm">
+                        <i class="bi bi-plus"></i> Agregar Pregunta
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if preguntas %}
+                        <div class="list-group list-group-flush">
+                            {% for pregunta in preguntas %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold">
+                                                Pregunta {{ forloop.counter }}
+                                                <span class="badge bg-info">{{ pregunta.opciones.count }} opciones</span>
+                                            </h6>
+                                            <p class="mb-1 text-truncate">{{ pregunta.texto|truncatechars:80 }}</p>
+                                            <small class="text-muted">
+                                                Tipo: {{ pregunta.get_tipo_display }}
+                                                {% if pregunta.puntos %}
+                                                    | {{ pregunta.puntos }} puntos
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'admin_pregunta_edit' pregunta.id %}" 
+                                               class="btn btn-outline-primary btn-sm" 
+                                               title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'admin_pregunta_delete' pregunta.id %}" 
+                                               class="btn btn-outline-danger btn-sm" 
+                                               title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mostrar opciones de respuesta -->
+                                    {% if pregunta.opciones.all %}
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block mb-1">Opciones de respuesta:</small>
+                                            {% for opcion in pregunta.opciones.all %}
+                                                <span class="badge me-1 {% if opcion.es_correcta %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {{ opcion.texto|truncatechars:30 }}
+                                                    {% if opcion.es_correcta %}<i class="bi bi-check"></i>{% endif %}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="mt-2">
+                                            <small class="text-warning">
+                                                <i class="bi bi-exclamation-triangle"></i> Sin opciones de respuesta
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-question-circle text-muted" style="font-size: 3rem;"></i>
+                            <h6 class="text-muted mt-2">No hay preguntas</h6>
+                            <p class="text-muted small">Agrega la primera pregunta para este quiz</p>
+                            <a href="{% url 'admin_pregunta_create' quiz.id %}" class="btn btn-success btn-sm">
+                                <i class="bi bi-plus-circle"></i> Crear Primera Pregunta
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Estadísticas del quiz -->
+            <div class="card mt-3 border-info">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-graph-up text-info"></i> Estadísticas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h5 class="text-primary">{{ quiz.participaciones.count }}</h5>
+                            <small class="text-muted">Participaciones</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-success">{{ preguntas.count }}</h5>
+                            <small class="text-muted">Preguntas</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-info">{{ quiz.fecha_creacion|date:"d/m/Y" }}</h5>
+                            <small class="text-muted">Creado</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Agregar clases de Bootstrap a los campos del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], textarea, select');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('form-check-input');
+    });
+});
+</script>
+{% endblock %}

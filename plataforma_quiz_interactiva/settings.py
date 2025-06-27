@@ -26,7 +26,16 @@ SECRET_KEY = 'django-insecure-_9-wsl!rss)xy3tfks9%!#%!wd&@ni$*1jmx+110b@xrp)^*kn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Permitir acceso desde cualquier host en la red local
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.10.50',  # Tu IP local
+    '192.168.1.*',    # Rango de IPs comunes en redes WiFi
+    '192.168.0.*',    # Otro rango común
+    '10.0.0.*',       # Rango para algunas redes
+    '*',              # Permitir todos (solo para desarrollo)
+]
 
 
 # Application definition
@@ -50,6 +59,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Configuraciones adicionales para acceso desde red WiFi
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_REFERRER_POLICY = None
 
 ROOT_URLCONF = 'plataforma_quiz_interactiva.urls'
 
@@ -123,3 +136,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Login/Logout URLs
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

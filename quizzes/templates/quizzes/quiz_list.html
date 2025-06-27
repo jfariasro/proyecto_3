@@ -1,21 +1,111 @@
 {% extends 'base.html' %}
+
+{% block title %}Quizzes Disponibles - Plataforma Quiz Interactiva{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Quizzes Disponibles</h1>
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-lightbulb"></i> Plataforma Quiz Interactiva
+        </h1>
+        <p class="lead">Desarrolla una plataforma interactiva de aprendizaje en tiempo real</p>
+        <p class="mb-4">Participa en quizzes educativos para fomentar el conocimiento y la agilidad mental</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3><i class="bi bi-collection"></i></h3>
+                        <h4>{{ quizzes|length }}</h4>
+                        <p>Quizzes Disponibles</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3><i class="bi bi-clock"></i></h3>
+                        <h4>En Tiempo Real</h4>
+                        <p>Respuestas Inmediatas</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3><i class="bi bi-trophy"></i></h3>
+                        <h4>Aprende Jugando</h4>
+                        <p>Conocimiento Divertido</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quizzes Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-5">
+                <i class="bi bi-journal-text"></i> Explora Nuestros Quizzes
+            </h2>
+        </div>
+    </div>
+    
     <div class="row">
         {% for quiz in quizzes %}
-        <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">{{ quiz.titulo }}</h5>
-                    <p class="card-text">{{ quiz.descripcion|truncatewords:20 }}</p>
-                    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-primary">Ver Quiz</a>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card quiz-card h-100">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-patch-question"></i> {{ quiz.titulo }}
+                    </h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="card-text flex-grow-1">{{ quiz.descripcion }}</p>
+                    <div class="quiz-info mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar3"></i> Creado: {{ quiz.fecha_creacion|date:"d/m/Y" }}
+                        </small>
+                        <br>
+                        <small class="text-muted">
+                            <i class="bi bi-list-ol"></i> {{ quiz.preguntas.count }} pregunta{{ quiz.preguntas.count|pluralize }}
+                        </small>
+                    </div>
+                    <a href="{% url 'quiz_detail' quiz.id %}" class="btn btn-quiz">
+                        <i class="bi bi-play-circle"></i> Comenzar Quiz
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <p>No hay quizzes disponibles.</p>
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i>
+                <h4>No hay quizzes disponibles</h4>
+                <p>¡Pronto tendremos nuevos quizzes para ti!</p>
+            </div>
+        </div>
         {% endfor %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h3>¿Por qué elegir nuestra plataforma?</h3>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <i class="bi bi-speedometer2 text-primary" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Rápido y Eficiente</h5>
+                <p>Respuestas inmediatas y resultados en tiempo real</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <i class="bi bi-graph-up text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Mejora Continua</h5>
+                <p>Desarrolla tus conocimientos paso a paso</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <i class="bi bi-people text-info" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Para Todos</h5>
+                <p>Quizzes adaptados a diferentes niveles de conocimiento</p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
