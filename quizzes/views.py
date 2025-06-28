@@ -80,7 +80,8 @@ def submit_quiz(request, quiz_id):
             'success': True,
             'puntaje': puntaje,
             'total': total_preguntas,
-            'porcentaje': porcentaje
+            'porcentaje': porcentaje,
+            'redirect_url': f'/quiz/results/{participacion.id}/'
         })
     
     return JsonResponse({'success': False})
@@ -336,3 +337,48 @@ def download_example_quiz(request):
     response = HttpResponse(contenido, content_type='text/plain; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="ejemplo_quiz.txt"'
     return response
+
+@login_required
+def quiz_results(request, participacion_id):
+    """Vista para mostrar los resultados detallados de un quiz completado"""
+    participacion = get_object_or_404(Participacion, id=participacion_id, usuario=request.user, completado=True)
+    
+    # Obtener todas las preguntas del quiz con las respuestas del usuario
+    preguntas_con_respuestas = []
+    
+    for pregunta in participacion.quiz.preguntas.all():
+        # Buscar la respuesta del usuario para esta pregunta
+        respuesta_usuario = participacion.respuestas.filter(pregunta=pregunta).first()
+        
+        # Obtener la opción correcta
+        opcion_correcta = pregunta.opciones.filter(es_correcta=True).first()
+        
+        # Determinar si la respuesta fue correcta
+        es_correcta = False
+        if respuesta_usuario and opcion_correcta:
+            es_correcta = respuesta_usuario.opcion.id == opcion_correcta.id
+        
+        preguntas_con_respuestas.append({
+            'pregunta': pregunta,
+            'opciones': pregunta.opciones.all(),
+            'respuesta_usuario': respuesta_usuario.opcion if respuesta_usuario else None,
+            'opcion_correcta': opcion_correcta,
+            'es_correcta': es_correcta
+        })
+    
+    # Calcular estadísticas
+    total_preguntas = len(preguntas_con_respuestas)
+    respuestas_correctas = sum(1 for item in preguntas_con_respuestas if item['es_correcta'])
+    respuestas_incorrectas = total_preguntas - respuestas_correctas
+    porcentaje = round((respuestas_correctas / total_preguntas) * 100) if total_preguntas > 0 else 0
+    
+    contexto = {
+        'participacion': participacion,
+        'preguntas_con_respuestas': preguntas_con_respuestas,
+        'total_preguntas': total_preguntas,
+        'respuestas_correctas': respuestas_correctas,
+        'respuestas_incorrectas': respuestas_incorrectas,
+        'porcentaje': porcentaje
+    }
+    
+    return render(request, 'quizzes/quiz_results.html', contexto)

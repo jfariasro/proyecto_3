@@ -243,7 +243,12 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    mostrarResultados(data.puntaje, data.total, data.porcentaje);
+                    // Redirigir a la página de resultados detallados
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        mostrarResultados(data.puntaje, data.total, data.porcentaje);
+                    }
                 } else {
                     alert('Error al enviar las respuestas');
                 }

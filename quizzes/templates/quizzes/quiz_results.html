@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultados del Quiz: {{ participacion.quiz.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header de resultados -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Resultados del Quiz
+                            </h3>
+                            <h5 class="mb-0 mt-1">{{ participacion.quiz.titulo }}</h5>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <span class="badge bg-light text-dark fs-6">
+                                {{ respuestas_correctas }}/{{ total_preguntas }} ({{ porcentaje }}%)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-trophy text-warning" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="text-primary">{{ participacion.puntaje }}</h4>
+                            <small class="text-muted">Puntuación Final</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="text-success">{{ respuestas_correctas }}</h4>
+                            <small class="text-muted">Respuestas Correctas</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-times-circle text-danger" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="text-danger">{{ respuestas_incorrectas }}</h4>
+                            <small class="text-muted">Respuestas Incorrectas</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <i class="fas fa-percentage text-info" style="font-size: 2rem;"></i>
+                            </div>
+                            <h4 class="text-info">{{ porcentaje }}%</h4>
+                            <small class="text-muted">Porcentaje de Acierto</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de progreso -->
+                    <div class="mt-3">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar 
+                                {% if porcentaje >= 80 %}bg-success
+                                {% elif porcentaje >= 60 %}bg-warning
+                                {% else %}bg-danger{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ porcentaje }}%;" 
+                                aria-valuenow="{{ porcentaje }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ porcentaje }}%
+                            </div>
+                        </div>
+                        <div class="mt-2 text-center">
+                            {% if porcentaje >= 80 %}
+                                <span class="badge bg-success">¡Excelente trabajo!</span>
+                            {% elif porcentaje >= 60 %}
+                                <span class="badge bg-warning">¡Buen trabajo!</span>
+                            {% else %}
+                                <span class="badge bg-danger">Puedes mejorar</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revisión detallada de preguntas -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list-ol me-2"></i>
+                        Revisión Detallada de Respuestas
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% for item in preguntas_con_respuestas %}
+                    <div class="card mb-3 
+                        {% if item.es_correcta %}border-success
+                        {% else %}border-danger{% endif %}">
+                        <div class="card-header 
+                            {% if item.es_correcta %}bg-light-success
+                            {% else %}bg-light-danger{% endif %}">
+                            <div class="row align-items-center">
+                                <div class="col-md-10">
+                                    <h6 class="mb-0">
+                                        Pregunta {{ forloop.counter }}: {{ item.pregunta.texto }}
+                                    </h6>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    {% if item.es_correcta %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Correcta
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Incorrecta
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for opcion in item.opciones %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="p-2 rounded 
+                                        {% if opcion == item.respuesta_usuario and item.es_correcta %}
+                                            bg-success text-white
+                                        {% elif opcion == item.respuesta_usuario and not item.es_correcta %}
+                                            bg-danger text-white
+                                        {% elif opcion == item.opcion_correcta %}
+                                            bg-warning text-dark
+                                        {% else %}
+                                            bg-light
+                                        {% endif %}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                {% if opcion == item.respuesta_usuario %}
+                                                    <i class="fas fa-arrow-right"></i>
+                                                {% endif %}
+                                                {% if opcion == item.opcion_correcta %}
+                                                    <i class="fas fa-star"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>{{ opcion.texto }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Explicación de colores -->
+                            {% if not item.es_correcta %}
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-arrow-right text-danger me-1"></i>Tu respuesta
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-star text-warning me-1"></i>Respuesta correcta
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <a href="{% url 'quiz_list' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-list me-1"></i>
+                        Volver a Quizzes
+                    </a>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-user me-1"></i>
+                        Ver Mi Perfil
+                    </a>
+                    <a href="{% url 'leaderboard' %}" class="btn btn-outline-info">
+                        <i class="fas fa-trophy me-1"></i>
+                        Tabla de Posiciones
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-light-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+.bg-light-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+</style>
+{% endblock %}

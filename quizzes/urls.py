@@ -5,6 +5,7 @@ urlpatterns = [
     path('', views.quiz_list, name='quiz_list'),
     path('quiz/<int:quiz_id>/', views.quiz_detail, name='quiz_detail'),
     path('quiz/<int:quiz_id>/submit/', views.submit_quiz, name='submit_quiz'),
+    path('quiz/results/<int:participacion_id>/', views.quiz_results, name='quiz_results'),
     path('register/', views.register, name='register'),
     path('profile/', views.profile, name='profile'),
     path('leaderboard/', views.leaderboard, name='leaderboard'),

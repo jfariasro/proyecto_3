@@ -67,6 +67,7 @@
                                     <th>Porcentaje</th>
                                     <th>Fecha</th>
                                     <th>Tiempo</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,6 +103,11 @@
                                         {% else %}
                                             -
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'quiz_results' participacion.id %}" class="btn btn-sm btn-outline-primary" title="Ver resultados detallados">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
