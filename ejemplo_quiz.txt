@@ -1,0 +1,62 @@
+Titulo del Quiz: Quiz Básico de Programación
+Descripcion: Un quiz para evaluar conocimientos básicos de lenguajes de programación
+
+Pregunta: ¿Cuál de estos es un lenguaje de programación?
+A) HTML
+B) CSS
+C) Python *
+D) SQL
+
+Pregunta: ¿Qué palabra clave se usa para definir una función en Python?
+A) function
+B) def *
+C) func
+D) define
+
+Pregunta: ¿Cuál es el resultado de 10 % 3 en la mayoría de lenguajes de programación?
+A) 3
+B) 3.33
+C) 1 *
+D) 0
+
+Pregunta: ¿Qué significa HTML?
+A) Home Tool Markup Language
+B) Hyperlinks and Text Markup Language
+C) HyperText Markup Language *
+D) High Tech Modern Language
+
+Pregunta: ¿Cuál de estos es un tipo de dato primitivo en Java?
+A) String
+B) int *
+C) Array
+D) Object
+
+Pregunta: ¿Qué operador se usa para comparar igualdad en JavaScript?
+A) =
+B) ==
+C) === *
+D) !=
+
+Pregunta: ¿Cuál es la extensión de archivo típica para Python?
+A) .java
+B) .js
+C) .py *
+D) .cpp
+
+Pregunta: ¿Qué significa CSS?
+A) Computer Style Sheets
+B) Creative Style Sheets
+C) Cascading Style Sheets *
+D) Colorful Style Sheets
+
+Pregunta: ¿Cuál de estos es un framework de JavaScript?
+A) Django
+B) Flask
+C) React *
+D) Laravel
+
+Pregunta: ¿Qué estructura de datos usa el principio LIFO (Last In, First Out)?
+A) Queue
+B) Stack *
+C) Array
+D) Tree

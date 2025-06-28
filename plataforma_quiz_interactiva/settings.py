@@ -24,13 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_9-wsl!rss)xy3tfks9%!#%!wd&@ni$*1jmx+110b@xrp)^*kn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Permitir acceso desde cualquier host en la red local
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '192.168.10.50',  # Tu IP local
+    '192.168.1.*',    # Rango de IPs comunes en redes WiFi
+    '192.168.0.*',    # Otro rango común
+    '10.0.0.*',       # Rango para algunas redes
     '*',              # Permitir todos (solo para desarrollo)
 ]
 
@@ -140,5 +143,5 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://29a1-179-51-143-207.ngrok-free.app',
+    'https://9b33-157-100-109-39.ngrok-free.app',
 ]

@@ -22,4 +22,8 @@ urlpatterns = [
     path('admin-panel/opcion/<int:opcion_id>/edit/', views.admin_opcion_edit, name='admin_opcion_edit'),
     path('admin-panel/opcion/<int:opcion_id>/delete/', views.admin_opcion_delete, name='admin_opcion_delete'),
     path('admin-panel/participaciones/', views.admin_participaciones, name='admin_participaciones'),
+    
+    # URLs para subir archivos de quiz
+    path('admin-panel/upload-quiz/', views.upload_quiz, name='upload_quiz'),
+    path('admin-panel/download-example/', views.download_example_quiz, name='download_example_quiz'),
 ]

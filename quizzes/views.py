@@ -11,7 +11,9 @@ from django.db.models import Avg, Count, Max
 from datetime import timedelta
 import json
 from .models import Quiz, Participacion, Respuesta, Pregunta, Opcion
-from .forms import QuizForm, PreguntaForm, OpcionForm
+from .forms import QuizForm, PreguntaForm, OpcionForm, UploadQuizForm
+from .utils import procesar_archivo_quiz, generar_archivo_ejemplo
+from .utils import procesar_archivo_quiz, generar_archivo_ejemplo
 
 def quiz_list(request):
     quizzes = Quiz.objects.filter(activo=True)
@@ -290,3 +292,47 @@ def admin_opcion_delete(request, opcion_id):
 def admin_participaciones(request):
     participaciones = Participacion.objects.filter(completado=True).order_by('-fecha')
     return render(request, 'quizzes/admin/participaciones.html', {'participaciones': participaciones})
+
+@user_passes_test(is_staff_user)
+def upload_quiz(request):
+    """Vista para subir un archivo de quiz"""
+    if request.method == 'POST':
+        form = UploadQuizForm(request.POST, request.FILES)
+        if form.is_valid():
+            archivo = request.FILES['archivo']
+            titulo = form.cleaned_data['titulo_quiz']
+            descripcion = form.cleaned_data['descripcion_quiz']
+            tiempo_limite = form.cleaned_data['tiempo_limite']
+            
+            # Validar tamaño del archivo (máximo 2MB)
+            if archivo.size > 2 * 1024 * 1024:
+                messages.error(request, 'El archivo es demasiado grande. Máximo 2MB permitido.')
+                return render(request, 'quizzes/admin/upload_quiz.html', {'form': form})
+            
+            # Validar extensión del archivo
+            if not archivo.name.endswith('.txt'):
+                messages.error(request, 'Solo se permiten archivos .txt')
+                return render(request, 'quizzes/admin/upload_quiz.html', {'form': form})
+            
+            # Procesar el archivo
+            quiz, error = procesar_archivo_quiz(archivo, titulo, descripcion, tiempo_limite)
+            
+            if quiz:
+                messages.success(request, f'Quiz "{quiz.titulo}" creado exitosamente desde el archivo. Se crearon {quiz.preguntas.count()} preguntas.')
+                return redirect('admin_quiz_edit', quiz_id=quiz.id)
+            else:
+                messages.error(request, f'Error al procesar el archivo: {error}')
+    else:
+        form = UploadQuizForm()
+    
+    return render(request, 'quizzes/admin/upload_quiz.html', {'form': form})
+
+@user_passes_test(is_staff_user)
+def download_example_quiz(request):
+    """Vista para descargar un archivo de ejemplo"""
+    from django.http import HttpResponse
+    
+    contenido = generar_archivo_ejemplo()
+    response = HttpResponse(contenido, content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="ejemplo_quiz.txt"'
+    return response

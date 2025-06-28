@@ -66,25 +66,37 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
                             <a href="{% url 'admin_quiz_create' %}" class="btn btn-primary w-100 py-3">
                                 <i class="bi bi-plus-circle"></i><br>
                                 <strong>Crear Quiz</strong>
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'upload_quiz' %}" class="btn btn-info w-100 py-3">
+                                <i class="bi bi-upload"></i><br>
+                                <strong>Subir Archivo</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
                             <a href="{% url 'admin_quiz_list' %}" class="btn btn-success w-100 py-3">
                                 <i class="bi bi-list-ul"></i><br>
                                 <strong>Gestionar Quizzes</strong>
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
                             <a href="{% url 'admin_participaciones' %}" class="btn btn-warning w-100 py-3">
                                 <i class="bi bi-graph-up"></i><br>
                                 <strong>Ver Reportes</strong>
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 mb-3">
+                            <a href="{% url 'download_example_quiz' %}" class="btn btn-outline-secondary w-100 py-3">
+                                <i class="bi bi-download"></i><br>
+                                <strong>Ejemplo</strong>
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
                             <a href="/admin/" class="btn btn-secondary w-100 py-3" target="_blank">
                                 <i class="bi bi-gear"></i><br>
                                 <strong>Django Admin</strong>
