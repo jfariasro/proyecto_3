@@ -370,7 +370,6 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 - **Documentación**: Este README
 - **Issues**: Usa el sistema de issues de GitHub
-- **Email**: [tu-email@ejemplo.com]
 
 ## 🔄 Changelog
 
