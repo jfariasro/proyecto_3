@@ -13,11 +13,17 @@ import json
 from .models import Quiz, Participacion, Respuesta, Pregunta, Opcion
 from .forms import QuizForm, PreguntaForm, OpcionForm, UploadQuizForm
 from .utils import procesar_archivo_quiz, generar_archivo_ejemplo
-from .utils import procesar_archivo_quiz, generar_archivo_ejemplo
+from django.core.paginator import Paginator
 
 def quiz_list(request):
-    quizzes = Quiz.objects.filter(activo=True)
-    return render(request, 'quizzes/quiz_list.html', {'quizzes': quizzes})
+    quizzes = Quiz.objects.filter(activo=True).order_by('-fecha_creacion')
+    
+    # Configurar paginación
+    paginator = Paginator(quizzes, 6)  # 6 quizzes por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'quizzes/quiz_list.html', {'page_obj': page_obj})
 
 @login_required
 def quiz_detail(request, quiz_id):
@@ -101,12 +107,18 @@ def register(request):
 @login_required
 def profile(request):
     participaciones = Participacion.objects.filter(usuario=request.user, completado=True).order_by('-fecha')
+    
+    # Configurar paginación
+    paginator = Paginator(participaciones, 8)  # 8 participaciones por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     stats = {
         'total_quizzes': participaciones.count(),
         'promedio_puntaje': participaciones.aggregate(Avg('puntaje'))['puntaje__avg'] or 0,
         'mejor_puntaje': participaciones.aggregate(Max('puntaje'))['puntaje__max'] or 0,
     }
-    return render(request, 'quizzes/profile.html', {'participaciones': participaciones, 'stats': stats})
+    return render(request, 'quizzes/profile.html', {'page_obj': page_obj, 'stats': stats})
 
 @login_required
 def leaderboard(request):
@@ -148,7 +160,13 @@ def admin_dashboard(request):
 @user_passes_test(is_staff_user)
 def admin_quiz_list(request):
     quizzes = Quiz.objects.all().order_by('-fecha_creacion')
-    return render(request, 'quizzes/admin/quiz_list.html', {'quizzes': quizzes})
+    
+    # Configurar paginación
+    paginator = Paginator(quizzes, 10)  # 10 quizzes por página en admin
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'quizzes/admin/quiz_list.html', {'page_obj': page_obj})
 
 @user_passes_test(is_staff_user)
 def admin_quiz_create(request):
@@ -292,7 +310,13 @@ def admin_opcion_delete(request, opcion_id):
 @user_passes_test(is_staff_user)
 def admin_participaciones(request):
     participaciones = Participacion.objects.filter(completado=True).order_by('-fecha')
-    return render(request, 'quizzes/admin/participaciones.html', {'participaciones': participaciones})
+    
+    # Configurar paginación
+    paginator = Paginator(participaciones, 15)  # 15 participaciones por página en admin
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'quizzes/admin/participaciones.html', {'page_obj': page_obj})
 
 @user_passes_test(is_staff_user)
 def upload_quiz(request):

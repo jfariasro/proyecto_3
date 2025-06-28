@@ -37,7 +37,7 @@
             <div class="card text-center border-primary h-100">
                 <div class="card-body">
                     <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
-                    <h3 class="mt-2 text-primary">{{ participaciones|length }}</h3>
+                    <h3 class="mt-2 text-primary">{{ page_obj.paginator.count }}</h3>
                     <p class="text-muted">Participaciones Totales</p>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                     <div>
                         <h5 class="mb-0">
                             <i class="bi bi-list-ul"></i> Historial de Participaciones
-                            <span class="badge bg-primary">{{ participaciones.count }}</span>
+                            <span class="badge bg-primary">{{ page_obj.paginator.count }}</span>
                         </h5>
                     </div>
                     <div class="btn-group" role="group">
@@ -119,7 +119,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for participacion in participaciones %}
+                                    {% for participacion in page_obj %}
                                         <tr data-puntaje="{{ participacion.puntaje }}" class="participacion-row">
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -204,13 +204,73 @@
                             <p class="text-muted">Los usuarios aún no han participado en ningún quiz</p>
                         </div>
                     {% endif %}
+                    
+                    <!-- Paginación -->
+                    {% if page_obj.has_other_pages %}
+                    <div class="mt-4">
+                        <nav aria-label="Paginación de participaciones">
+                            <ul class="pagination justify-content-center">
+                                <!-- Botón Previous -->
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Anterior">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </span>
+                                    </li>
+                                {% endif %}
+                                
+                                <!-- Números de página -->
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active" aria-current="page">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <!-- Botón Next -->
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Siguiente">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        
+                        <!-- Información de paginación -->
+                        <div class="text-center text-muted mt-3">
+                            <small>
+                                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                ({{ page_obj.paginator.count }} participación{{ page_obj.paginator.count|pluralize:"es" }} en total)
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Análisis por quiz (si hay participaciones) -->
-    {% if participaciones %}
+    {% if page_obj %}
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">

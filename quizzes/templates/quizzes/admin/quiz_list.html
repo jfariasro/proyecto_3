@@ -47,7 +47,7 @@
                     </h5>
                 </div>
                 <div class="card-body p-0">
-                    {% if quizzes %}
+                    {% if page_obj %}
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
@@ -62,7 +62,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for quiz in quizzes %}
+                                    {% for quiz in page_obj %}
                                         <tr>
                                             <td class="fw-bold text-primary">#{{ quiz.id }}</td>
                                             <td>
@@ -117,6 +117,66 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Paginación -->
+                        {% if page_obj.has_other_pages %}
+                        <div class="mt-4">
+                            <nav aria-label="Paginación de quizzes">
+                                <ul class="pagination justify-content-center">
+                                    <!-- Botón Previous -->
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </span>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <!-- Números de página -->
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active" aria-current="page">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Botón Next -->
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Siguiente">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link" aria-label="Siguiente">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </span>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            
+                            <!-- Información de paginación -->
+                            <div class="text-center text-muted mt-3">
+                                <small>
+                                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                    ({{ page_obj.paginator.count }} quiz{{ page_obj.paginator.count|pluralize:"zes" }} en total)
+                                </small>
+                            </div>
+                        </div>
+                        {% endif %}
                     {% else %}
                         <div class="text-center py-5">
                             <i class="bi bi-collection text-muted" style="font-size: 4rem;"></i>
@@ -133,12 +193,12 @@
     </div>
 
     <!-- Estadísticas rápidas -->
-    {% if quizzes %}
+    {% if page_obj %}
         <div class="row mt-4">
             <div class="col-md-3">
                 <div class="card text-center border-success">
                     <div class="card-body">
-                        <h4 class="text-success">{{ quizzes|length }}</h4>
+                        <h4 class="text-success">{{ page_obj.paginator.count }}</h4>
                         <small class="text-muted">Total de Quizzes</small>
                     </div>
                 </div>
@@ -146,7 +206,7 @@
             <div class="col-md-3">
                 <div class="card text-center border-info">
                     <div class="card-body">
-                        <h4 class="text-info">{% for quiz in quizzes %}{{ quiz.preguntas.count|add:0 }}{% empty %}0{% endfor %}</h4>
+                        <h4 class="text-info">{% for quiz in page_obj %}{{ quiz.preguntas.count|add:0 }}{% empty %}0{% endfor %}</h4>
                         <small class="text-muted">Preguntas Totales</small>
                     </div>
                 </div>
@@ -154,16 +214,16 @@
             <div class="col-md-3">
                 <div class="card text-center border-primary">
                     <div class="card-body">
-                        <h4 class="text-primary">{{ quizzes|dictsort:"activo"|length }}</h4>
-                        <small class="text-muted">Quizzes Activos</small>
+                        <h4 class="text-primary">{{ page_obj.object_list|length }}</h4>
+                        <small class="text-muted">En esta página</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card text-center border-warning">
                     <div class="card-body">
-                        <h4 class="text-warning">{{ quizzes.count|add:"-1" }}</h4>
-                        <small class="text-muted">Últimos Creados</small>
+                        <h4 class="text-warning">{{ page_obj.number }}</h4>
+                        <small class="text-muted">Página actual</small>
                     </div>
                 </div>
             </div>
